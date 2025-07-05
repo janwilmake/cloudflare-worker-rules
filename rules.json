@@ -1,5 +1,5 @@
 {
-  "$schema": "./rules.schema.json",
+  "$schema": "rules.schema.json",
   "rewrites": [
     {
       "conditions": { "headers": { "accept": { "contains": "text/html" } } },

@@ -12,5 +12,8 @@ This repo contains an initial draft of such a rules.json schema, with a draft im
 
 Context:
 
-https://developers.cloudflare.com/workers/static-assets/headers/index.md
-https://developers.cloudflare.com/workers/static-assets/redirects/index.md
+- https://developers.cloudflare.com/workers/static-assets/headers/index.md
+- https://developers.cloudflare.com/workers/static-assets/redirects/index.md
+- https://openapi.vercel.sh/vercel.json
+- https://developers.cloudflare.com/ruleset-engine/
+- https://developers.cloudflare.com/rules/

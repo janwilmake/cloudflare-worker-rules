@@ -3,6 +3,6 @@
   "name": "cloudflare-worker-rules",
   "compatibility_date": "2025-07-05",
   "dev": { "port": 3000 },
-  "assets": { "directory": "./" },
+  "assets": { "directory": "." },
   "routes": [{ "custom_domain": true, "pattern": "rules.flaredream.com" }]
 }

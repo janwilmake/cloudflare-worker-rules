@@ -1,0 +1,405 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cloudflare Workers Rules Configuration",
+  "description": "Unified configuration for redirects, rewrites, headers, and dynamic rules in Cloudflare Workers",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "redirects": {
+      "type": "array",
+      "description": "URL redirects with optional conditions",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Source URL pattern (supports wildcards and placeholders)"
+          },
+          "to": {
+            "type": "string",
+            "description": "Destination URL (supports placeholders and dynamic expressions)"
+          },
+          "status": {
+            "type": "integer",
+            "enum": [301, 302, 303, 307, 308],
+            "default": 302,
+            "description": "HTTP status code for redirect"
+          },
+          "conditions": {
+            "$ref": "#/definitions/conditions"
+          }
+        },
+        "required": ["from", "to"],
+        "additionalProperties": false
+      }
+    },
+    "rewrites": {
+      "type": "array",
+      "description": "URL rewrites (internal redirects) with optional conditions",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Source URL pattern (supports wildcards and placeholders)"
+          },
+          "to": {
+            "type": "string",
+            "description": "Destination URL (supports placeholders and dynamic expressions)"
+          },
+          "status": {
+            "type": "integer",
+            "enum": [200],
+            "default": 200,
+            "description": "HTTP status code for rewrite (always 200)"
+          },
+          "conditions": {
+            "$ref": "#/definitions/conditions"
+          }
+        },
+        "required": ["from", "to"],
+        "additionalProperties": false
+      }
+    },
+    "headers": {
+      "type": "array",
+      "description": "Custom headers to attach to responses",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "URL pattern to match (supports wildcards and placeholders)"
+          },
+          "headers": {
+            "type": "object",
+            "description": "Headers to set, modify, or remove",
+            "patternProperties": {
+              "^[a-zA-Z0-9-_]+$": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "description": "Header value (supports placeholders)"
+                  },
+                  {
+                    "type": "null",
+                    "description": "Remove header (null value)"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "description": "Header value (supports placeholders)"
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": ["set", "append", "remove"],
+                        "default": "set",
+                        "description": "How to handle the header"
+                      }
+                    },
+                    "required": ["value"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          },
+          "conditions": {
+            "$ref": "#/definitions/conditions"
+          }
+        },
+        "required": ["path", "headers"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "definitions": {
+    "conditions": {
+      "type": "object",
+      "description": "Conditional logic for when rules should apply",
+      "properties": {
+        "headers": {
+          "type": "object",
+          "description": "HTTP header conditions",
+          "patternProperties": {
+            "^[a-zA-Z0-9-_]+$": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "description": "Exact header value match"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "equals": {
+                      "type": "string",
+                      "description": "Exact match"
+                    },
+                    "contains": {
+                      "type": "string",
+                      "description": "Contains substring"
+                    },
+                    "startsWith": {
+                      "type": "string",
+                      "description": "Starts with string"
+                    },
+                    "endsWith": {
+                      "type": "string",
+                      "description": "Ends with string"
+                    },
+                    "matches": {
+                      "type": "string",
+                      "description": "Regular expression match"
+                    },
+                    "exists": {
+                      "type": "boolean",
+                      "description": "Whether header exists"
+                    },
+                    "in": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Header value is in list"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "method": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "HEAD",
+                "OPTIONS"
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "GET",
+                  "POST",
+                  "PUT",
+                  "DELETE",
+                  "PATCH",
+                  "HEAD",
+                  "OPTIONS"
+                ]
+              }
+            }
+          ],
+          "description": "HTTP methods to match"
+        },
+        "host": {
+          "type": "string",
+          "description": "Host/domain to match (supports wildcards)"
+        },
+        "ip": {
+          "type": "object",
+          "description": "IP-based conditions",
+          "properties": {
+            "country": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "description": "Two-letter country code"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of country codes"
+                }
+              ]
+            },
+            "continent": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "description": "Two-letter continent code"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of continent codes"
+                }
+              ]
+            },
+            "asn": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "description": "AS number"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "description": "List of AS numbers"
+                }
+              ]
+            },
+            "source": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "description": "CIDR notation or IP address"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of CIDR blocks or IP addresses"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "time": {
+          "type": "object",
+          "description": "Time-based conditions",
+          "properties": {
+            "after": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Rule applies after this time"
+            },
+            "before": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Rule applies before this time"
+            },
+            "dayOfWeek": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 6
+              },
+              "description": "Days of week (0=Sunday, 6=Saturday)"
+            },
+            "hourOfDay": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23
+              },
+              "description": "Hours of day (0-23)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "device": {
+          "type": "object",
+          "description": "Device-based conditions",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["desktop", "mobile", "tablet"],
+              "description": "Device type"
+            },
+            "bot": {
+              "type": "boolean",
+              "description": "Whether request is from a bot"
+            }
+          },
+          "additionalProperties": false
+        },
+        "query": {
+          "type": "object",
+          "description": "Query parameter conditions",
+          "patternProperties": {
+            "^[a-zA-Z0-9-_]+$": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "description": "Exact parameter value match"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "equals": {
+                      "type": "string"
+                    },
+                    "contains": {
+                      "type": "string"
+                    },
+                    "exists": {
+                      "type": "boolean"
+                    },
+                    "matches": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "cookies": {
+          "type": "object",
+          "description": "Cookie-based conditions",
+          "patternProperties": {
+            "^[a-zA-Z0-9-_]+$": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "description": "Exact cookie value match"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "equals": {
+                      "type": "string"
+                    },
+                    "contains": {
+                      "type": "string"
+                    },
+                    "exists": {
+                      "type": "boolean"
+                    },
+                    "matches": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "ssl": {
+          "type": "boolean",
+          "description": "Whether request uses SSL/TLS"
+        },
+        "custom": {
+          "type": "string",
+          "description": "Custom expression using Cloudflare Rules Language"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -9,3 +9,8 @@ https://letmeprompt.com/previous-prompt-ht-j7r3k20
 Preferably we'd have a single overarching `rules.json` which has a JSON Schema that allows us to pass redirects, headers, and dynamic rules like the above.
 
 This repo contains an initial draft of such a rules.json schema, with a draft implementation of how we can make this work using an extension to wrangler.
+
+Context:
+
+https://developers.cloudflare.com/workers/static-assets/headers/index.md
+https://developers.cloudflare.com/workers/static-assets/redirects/index.md
